@@ -15,9 +15,7 @@
   color: var(--text-normal, #f1f5f9);
   font-family: var(--font-interface, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-}
+  }
 
 .gc-container::-webkit-scrollbar {
   width: 6px;

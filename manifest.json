@@ -1,9 +1,9 @@
 {
   "id": "google-classroom-sync",
   "name": "Google Classroom Sync",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "minAppVersion": "0.15.0",
-  "description": "Sync your Google Classroom courses, upcoming assignments, materials, and generate organized Markdown study notes in Obsidian.",
+  "description": "Sync your Google Classroom courses, upcoming assignments, materials, and generate organized Markdown study notes.",
   "author": "Nelxson2099",
   "authorUrl": "https://github.com/Nelxson2099",
   "isDesktopOnly": true
