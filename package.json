@@ -1,0 +1,19 @@
+{
+  "name": "obsidian-google-classroom",
+  "version": "1.2.0",
+  "description": "Google Classroom Sync for Obsidian - Courses, upcoming assignments, and Markdown notes",
+  "main": "main.js",
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "google-classroom",
+    "education",
+    "students",
+    "productivity"
+  ],
+  "author": "Nelxson2099",
+  "license": "MIT",
+  "devDependencies": {
+    "obsidian": "^1.5.0"
+  }
+}
