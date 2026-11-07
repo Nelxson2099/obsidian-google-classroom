@@ -14,6 +14,147 @@ var url = require("url");
 var VIEW_TYPE_CLASSROOM = "google-classroom-sync-view";
 var OAUTH_PORT = 42813;
 var REDIRECT_URI = `http://127.0.0.1:${OAUTH_PORT}/callback`;
+var USER_LOCALE = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("language") || "en").toLowerCase();
+var IS_ES = USER_LOCALE.startsWith("es");
+var I18N = {
+  en: {
+    liveSync: "Live sync \u2022 Last update:",
+    never: "Never",
+    connectPrompt: "Connect your account to sync courses and tasks",
+    sync: "Sync",
+    syncNowFull: "\u{1F504} Sync Now",
+    connectGoogle: "\u{1F511} Connect with Google",
+    tabCourses: "\u{1F4DA} Courses ({count})",
+    tabTasks: "\u{1F4CB} Tasks ({count})",
+    tabSettings: "\u2699\uFE0F Connection",
+    searchCourses: "Search course...",
+    searchTasks: "Search task...",
+    onboardingTitle: "Link your Google Classroom",
+    onboardingDesc: "Access your coursework, due dates, and subjects organized in real time inside your Obsidian vault.",
+    onboardF1: "\u2728 Official Google Classroom API integration",
+    onboardF2: "\u{1F4DD} Automatic Markdown note generation per assignment",
+    onboardF3: "\u23F0 Smart urgency countdowns (Due today, tomorrow, this week)",
+    onboardF4: "\u{1F512} 100% private connection stored locally on your device",
+    connectNowBtn: "\u{1F680} Connect with Google Classroom Now",
+    statCourses: "Active Courses",
+    statTasks: "Pending Tasks",
+    statDueSoon: "Due Soon",
+    statFolder: "Vault Folder",
+    badgeActive: "Active ({count})",
+    badgeHidden: "Hidden ({count})",
+    emptyHidden: 'No hidden courses. You can hide any course by clicking "Hide".',
+    noCoursesQuery: 'No courses found with "{query}"',
+    noActiveCourses: "No active courses found.",
+    hideBtn: "\u2715 Hide",
+    unhideBtn: "\u{1F441}\uFE0F Show",
+    totTasks: "TOTAL TASKS",
+    pending: "PENDING",
+    upToDate: "UP TO DATE",
+    viewTasks: "\u{1F4CB} View Tasks",
+    openClassroom: "\u2197 Classroom",
+    filterAll: "All",
+    filterPending: "Pending",
+    filterDone: "Completed",
+    filterOverdue: "Overdue",
+    noTasksQuery: 'No tasks found with "{query}"',
+    noTasksCategory: "No tasks in this category.",
+    dueToday: "\u{1F6A8} Due Today",
+    dueTomorrow: "\u26A0\uFE0F Due Tomorrow",
+    dueInDays: "\u23F3 {days}d left",
+    overdue: "\u274C Overdue",
+    noDueDate: "\u{1F4C5} No due date",
+    openInClassroom: "Open in Classroom",
+    openLocalNote: "Open Markdown Note",
+    connTitle: "\u2699\uFE0F Google Classroom Connection & Credentials",
+    privacyNote: "\u{1F6E1}\uFE0F <b>Local-First & Absolute Privacy:</b> Connection runs directly between your Obsidian and Google's official OAuth 2.0 servers (RFC 8252). Your tokens and notes stay <b>strictly on your machine</b>. No third-party servers.",
+    connectedAccount: "\u{1F464} Connected Account",
+    connectedBadge: "\u{1F7E2} Connected",
+    nameLabel: "Name:",
+    emailLabel: "Email:",
+    changeAccount: "\u{1F511} Change Account",
+    logoutBtn: "\u{1F6AA} Log Out",
+    credCardTitle: "\u{1F511} Google Cloud Credentials (OAuth 2.0)",
+    credCardDesc: "Enter your Client ID and Client Secret obtained from Google Cloud Console to connect with maximum privacy and without limits.",
+    clientIdLabel: "Client ID:",
+    clientSecretLabel: "Client Secret:",
+    connectBtn: "\u{1F680} Connect with Google Classroom",
+    reconnectBtn: "\u{1F504} Reconnect with Google",
+    guideTitle: "\u{1F4D6} Quick Guide: How to get your free credentials in 3 minutes",
+    guideWhy: "\u{1F4A1} <b>Why use your own credentials?</b> Gives you unlimited personal quota, maximum privacy, and guaranteed compatibility even if your school or university restricts unverified third-party apps."
+  },
+  es: {
+    liveSync: "Sincronizaci\xF3n en vivo \u2022 \xDAltima actualizaci\xF3n:",
+    never: "Nunca",
+    connectPrompt: "Conecta tu cuenta para sincronizar tareas y cursos",
+    sync: "Sincronizar",
+    syncNowFull: "\u{1F504} Sincronizar Ahora",
+    connectGoogle: "\u{1F511} Conectar con Google",
+    tabCourses: "\u{1F4DA} Materias ({count})",
+    tabTasks: "\u{1F4CB} Tareas ({count})",
+    tabSettings: "\u2699\uFE0F Conexi\xF3n",
+    searchCourses: "Buscar materia...",
+    searchTasks: "Buscar tarea...",
+    onboardingTitle: "Vincula tu Google Classroom",
+    onboardingDesc: "Accede a todas tus tareas escolares, fechas de entrega y materias organizadas en tiempo real dentro de tu b\xF3veda Obsidian.",
+    onboardF1: "\u2728 Sincronizaci\xF3n oficial con Google Classroom API",
+    onboardF2: "\u{1F4DD} Creaci\xF3n autom\xE1tica de notas Markdown por tarea",
+    onboardF3: "\u23F0 Detecci\xF3n de urgencia (Vence hoy, ma\xF1ana, esta semana)",
+    onboardF4: "\u{1F512} Conexi\xF3n 100% privada almacenada localmente en tu PC",
+    connectNowBtn: "\u{1F680} Conectar con Google Classroom Ahora",
+    statCourses: "Materias Activas",
+    statTasks: "Tareas Pendientes",
+    statDueSoon: "Vencen Pronto",
+    statFolder: "Carpeta en B\xF3veda",
+    badgeActive: "Activas ({count})",
+    badgeHidden: "Ocultas ({count})",
+    emptyHidden: 'No tienes materias ocultas. Puedes ocultar cualquier materia tocando el bot\xF3n "Ocultar".',
+    noCoursesQuery: 'No se encontraron materias con "{query}"',
+    noActiveCourses: "No hay materias activas.",
+    hideBtn: "\u2715 Ocultar",
+    unhideBtn: "\u{1F441}\uFE0F Mostrar",
+    totTasks: "TAREAS TOTALES",
+    pending: "PENDIENTES",
+    upToDate: "AL D\xCDA",
+    viewTasks: "\u{1F4CB} Ver Tareas",
+    openClassroom: "\u2197 Classroom",
+    filterAll: "Todas",
+    filterPending: "Pendientes",
+    filterDone: "Completadas",
+    filterOverdue: "Vencidas",
+    noTasksQuery: 'No se encontraron tareas con "{query}"',
+    noTasksCategory: "No hay tareas en esta categor\xEDa.",
+    dueToday: "\u{1F6A8} Vence Hoy",
+    dueTomorrow: "\u26A0\uFE0F Vence Ma\xF1ana",
+    dueInDays: "\u23F3 Faltan {days}d",
+    overdue: "\u274C Vencida",
+    noDueDate: "\u{1F4C5} Sin fecha de entrega",
+    openInClassroom: "Abrir en Classroom",
+    openLocalNote: "Abrir Nota Markdown",
+    connTitle: "\u2699\uFE0F Conexi\xF3n & Credenciales de Google Classroom",
+    privacyNote: "\u{1F6E1}\uFE0F <b>Local-First y Privacidad Absoluta:</b> La conexi\xF3n se realiza directamente entre tu Obsidian y los servidores oficiales de Google (OAuth 2.0 Desktop RFC 8252). Tus tokens y notas se guardan <b>exclusivamente en tu dispositivo</b>. Sin servidores intermedios.",
+    connectedAccount: "\u{1F464} Cuenta Vinculada",
+    connectedBadge: "\u{1F7E2} Conectado",
+    nameLabel: "Nombre:",
+    emailLabel: "Correo:",
+    changeAccount: "\u{1F511} Cambiar Cuenta",
+    logoutBtn: "\u{1F6AA} Cerrar Sesi\xF3n",
+    credCardTitle: "\u{1F511} Credenciales de Google Cloud (OAuth 2.0)",
+    credCardDesc: "Ingresa tu Client ID y Client Secret obtenidos en Google Cloud Console para conectar tu cuenta con m\xE1xima privacidad y sin l\xEDmites.",
+    clientIdLabel: "ID de Cliente (Client ID):",
+    clientSecretLabel: "Secreto de Cliente (Client Secret):",
+    connectBtn: "\u{1F680} Conectar con Google Classroom",
+    reconnectBtn: "\u{1F504} Reconectar con Google",
+    guideTitle: "\u{1F4D6} Gu\xEDa R\xE1pida: C\xF3mo obtener tus credenciales gratuitas en 3 minutos",
+    guideWhy: "\u{1F4A1} <b>\xBFPor qu\xE9 usar tus propias credenciales?</b> Te otorga cuota personal ilimitada, m\xE1xima privacidad y compatibilidad garantizada incluso si tu colegio o universidad bloquea aplicaciones de terceros."
+  }
+};
+function t(key, vars = {}) {
+  let str = (IS_ES ? I18N.es[key] : I18N.en[key]) || I18N.en[key] || key;
+  for (const v in vars) {
+    str = str.replace(new RegExp(`\\{${v}\\}`, "g"), vars[v]);
+  }
+  return str;
+}
 var DEFAULT_SETTINGS = {
   clientId: "",
   clientSecret: "",
@@ -523,12 +664,12 @@ pending_tasks: ${pendingList.length}
 
 `;
     } else {
-      pendingList.forEach((t) => {
-        const dueText = t.dueDate ? `\u{1F4C5} ${t.dueDate} ${t.dueTime || ""}` : "\u{1F4C5} Sin fecha l\xEDmite";
-        const courseSan = sanitizeFileName(t.courseName);
-        const taskSan = sanitizeFileName(t.title);
-        const noteLink = `[[${baseFolder}/${courseSan}/${taskSan}|${t.title}]]`;
-        indexMd += `- [ ] ${noteLink} \u2014 **${t.courseName}** (${dueText}) [\u{1F517} Classroom](${t.alternateLink})
+      pendingList.forEach((t2) => {
+        const dueText = t2.dueDate ? `\u{1F4C5} ${t2.dueDate} ${t2.dueTime || ""}` : "\u{1F4C5} Sin fecha l\xEDmite";
+        const courseSan = sanitizeFileName(t2.courseName);
+        const taskSan = sanitizeFileName(t2.title);
+        const noteLink = `[[${baseFolder}/${courseSan}/${taskSan}|${t2.title}]]`;
+        indexMd += `- [ ] ${noteLink} \u2014 **${t2.courseName}** (${dueText}) [\u{1F517} Classroom](${t2.alternateLink})
 `;
       });
       indexMd += "\n";
@@ -537,11 +678,11 @@ pending_tasks: ${pendingList.length}
       indexMd += `## \u2705 Tareas Completadas / Entregadas
 
 `;
-      completedList.forEach((t) => {
-        const courseSan = sanitizeFileName(t.courseName);
-        const taskSan = sanitizeFileName(t.title);
-        const noteLink = `[[${baseFolder}/${courseSan}/${taskSan}|${t.title}]]`;
-        indexMd += `- [x] ${noteLink} \u2014 **${t.courseName}** [\u{1F517} Ver](${t.alternateLink})
+      completedList.forEach((t2) => {
+        const courseSan = sanitizeFileName(t2.courseName);
+        const taskSan = sanitizeFileName(t2.title);
+        const noteLink = `[[${baseFolder}/${courseSan}/${taskSan}|${t2.title}]]`;
+        indexMd += `- [x] ${noteLink} \u2014 **${t2.courseName}** [\u{1F517} Ver](${t2.alternateLink})
 `;
       });
       indexMd += "\n";
@@ -559,35 +700,35 @@ pending_tasks: ${pendingList.length}
         await vault.createFolder(courseFolder);
       }
       const courseTasks = activeAssignments.filter((a) => a.courseId === course.id);
-      for (const t of courseTasks) {
-        const taskPath = `${courseFolder}/${sanitizeFileName(t.title)}.md`;
+      for (const t2 of courseTasks) {
+        const taskPath = `${courseFolder}/${sanitizeFileName(t2.title)}.md`;
         const taskFrontmatter = [
           "---",
           "type: classroom-task",
-          `course: "${t.courseName.replace(/"/g, '\\"')}"`,
-          `course_id: "${t.courseId}"`,
-          `task_id: "${t.id}"`,
-          `due_date: "${t.dueDate || ""}"`,
-          `due_time: "${t.dueTime || ""}"`,
-          `status: "${t.submissionState}"`,
-          `max_points: ${t.maxPoints}`,
-          `link: "${t.alternateLink}"`,
+          `course: "${t2.courseName.replace(/"/g, '\\"')}"`,
+          `course_id: "${t2.courseId}"`,
+          `task_id: "${t2.id}"`,
+          `due_date: "${t2.dueDate || ""}"`,
+          `due_time: "${t2.dueTime || ""}"`,
+          `status: "${t2.submissionState}"`,
+          `max_points: ${t2.maxPoints}`,
+          `link: "${t2.alternateLink}"`,
           "---",
           ""
         ].join("\n");
         const taskBody = [
-          `# ${t.title}`,
+          `# ${t2.title}`,
           "",
           "> [!NOTE] Detalles de la Tarea",
-          `> **Materia:** ${t.courseName} ${t.courseSection ? "(" + t.courseSection.slice(0, 30) + ")" : ""}`,
-          `> **Fecha L\xEDmite:** ${t.dueDate ? t.dueDate + " " + (t.dueTime || "") : "Sin fecha l\xEDmite"}`,
-          `> **Puntuaci\xF3n:** ${t.maxPoints > 0 ? t.maxPoints + " pts" : "Sin calificar"}`,
-          `> **Estado:** ${t.submissionState}`,
-          `> **Enlace Oficial:** [${t.title}](${t.alternateLink})`,
+          `> **Materia:** ${t2.courseName} ${t2.courseSection ? "(" + t2.courseSection.slice(0, 30) + ")" : ""}`,
+          `> **Fecha L\xEDmite:** ${t2.dueDate ? t2.dueDate + " " + (t2.dueTime || "") : "Sin fecha l\xEDmite"}`,
+          `> **Puntuaci\xF3n:** ${t2.maxPoints > 0 ? t2.maxPoints + " pts" : "Sin calificar"}`,
+          `> **Estado:** ${t2.submissionState}`,
+          `> **Enlace Oficial:** [${t2.title}](${t2.alternateLink})`,
           "",
           "## \u{1F4CB} Instrucciones del Docente",
           "",
-          t.description ? t.description : "*Sin descripci\xF3n provista por el docente.*",
+          t2.description ? t2.description : "*Sin descripci\xF3n provista por el docente.*",
           "",
           "---",
           "",
@@ -639,7 +780,7 @@ var GoogleClassroomView = class extends obsidian.ItemView {
     titleWrap.createEl("h1", { text: "Google Classroom Sync" });
     titleWrap.createEl("p", {
       cls: "gc-subtitle",
-      text: isConnected ? `Sincronizaci\xF3n en vivo \u2022 \xDAltima actualizaci\xF3n: ${this.plugin.data.lastSync ? new Date(this.plugin.data.lastSync).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Nunca"}` : "Conecta tu cuenta para sincronizar tareas y cursos"
+      text: isConnected ? `${t("liveSync")} ${this.plugin.data.lastSync ? new Date(this.plugin.data.lastSync).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : t("never")}` : t("connectPrompt")
     });
     const headerActions = header.createEl("div", { cls: "gc-header-actions" });
     if (isConnected) {
@@ -651,13 +792,13 @@ var GoogleClassroomView = class extends obsidian.ItemView {
       userBadge.createEl("span", { text: userName });
       const syncBtn = headerActions.createEl("button", {
         cls: "gc-btn gc-btn-primary",
-        text: "\u{1F504} Sincronizar"
+        text: `\u{1F504} ${t("sync")}`
       });
       syncBtn.onclick = () => this.plugin.syncAll(true);
     } else {
       const loginBtn = headerActions.createEl("button", {
         cls: "gc-btn gc-btn-google",
-        text: "\u{1F511} Conectar con Google"
+        text: t("connectGoogle")
       });
       loginBtn.onclick = () => {
         this.plugin.startOAuthLogin(() => this.render(), (err) => {
@@ -678,7 +819,7 @@ var GoogleClassroomView = class extends obsidian.ItemView {
     const pendingCount = activeAssignments.filter((a) => a.submissionState !== "TURNED_IN" && a.submissionState !== "RETURNED").length;
     const tabCourses = tabs.createEl("button", {
       cls: `gc-tab-btn ${this.activeTab === "courses" ? "is-active" : ""}`,
-      text: `\u{1F4DA} Materias (${activeCourses.length})`
+      text: t("tabCourses", { count: activeCourses.length })
     });
     tabCourses.onclick = () => {
       this.activeTab = "courses";
@@ -686,7 +827,7 @@ var GoogleClassroomView = class extends obsidian.ItemView {
     };
     const tabTasks = tabs.createEl("button", {
       cls: `gc-tab-btn ${this.activeTab === "tasks" ? "is-active" : ""}`,
-      text: `\u{1F4CB} Tareas (${pendingCount})`
+      text: t("tabTasks", { count: pendingCount })
     });
     tabTasks.onclick = () => {
       this.activeTab = "tasks";
@@ -694,7 +835,7 @@ var GoogleClassroomView = class extends obsidian.ItemView {
     };
     const tabSettings = tabs.createEl("button", {
       cls: `gc-tab-btn ${this.activeTab === "settings" ? "is-active" : ""}`,
-      text: "\u2699\uFE0F Conexi\xF3n"
+      text: t("tabSettings")
     });
     tabSettings.onclick = () => {
       this.activeTab = "settings";
@@ -705,7 +846,7 @@ var GoogleClassroomView = class extends obsidian.ItemView {
       searchBox.createEl("span", { text: "\u{1F50D}" });
       const input = searchBox.createEl("input", {
         type: "text",
-        placeholder: this.activeTab === "courses" ? "Buscar materia..." : "Buscar tarea..."
+        placeholder: this.activeTab === "courses" ? t("searchCourses") : t("searchTasks")
       });
       input.value = this.searchQuery;
       input.oninput = (e) => {
@@ -962,11 +1103,11 @@ var GoogleClassroomView = class extends obsidian.ItemView {
     const list = parent.createEl("div", { cls: "gc-assignments-list" });
     let tasks = activeAssignments;
     if (this.filterCourse !== "ALL") {
-      tasks = tasks.filter((t) => t.courseId === this.filterCourse);
+      tasks = tasks.filter((t2) => t2.courseId === this.filterCourse);
     }
     if (this.searchQuery) {
       tasks = tasks.filter(
-        (t) => t.title && t.title.toLowerCase().includes(this.searchQuery) || t.courseName && t.courseName.toLowerCase().includes(this.searchQuery)
+        (t2) => t2.title && t2.title.toLowerCase().includes(this.searchQuery) || t2.courseName && t2.courseName.toLowerCase().includes(this.searchQuery)
       );
     }
     if (tasks.length === 0) {
@@ -983,9 +1124,9 @@ var GoogleClassroomView = class extends obsidian.ItemView {
       if (!b.dueIso) return -1;
       return new Date(a.dueIso) - new Date(b.dueIso);
     });
-    tasks.forEach((t) => {
-      const isDone = t.submissionState === "TURNED_IN" || t.submissionState === "RETURNED";
-      const dueObj = t.dueIso ? { iso: new Date(t.dueIso), dateStr: t.dueDate } : null;
+    tasks.forEach((t2) => {
+      const isDone = t2.submissionState === "TURNED_IN" || t2.submissionState === "RETURNED";
+      const dueObj = t2.dueIso ? { iso: new Date(t2.dueIso), dateStr: t2.dueDate } : null;
       const urgency = getUrgencyBadge(dueObj);
       const isUrgent = !isDone && urgency.daysDiff <= 2;
       const card = list.createEl("div", {
@@ -995,14 +1136,14 @@ var GoogleClassroomView = class extends obsidian.ItemView {
       const titleArea = header.createEl("div", { cls: "gc-task-title-area" });
       titleArea.createEl("div", {
         cls: "gc-task-course-pill",
-        text: t.courseName
+        text: t2.courseName
       });
-      titleArea.createEl("h3", { cls: "gc-task-title", text: t.title });
+      titleArea.createEl("h3", { cls: "gc-task-title", text: t2.title });
       const meta = card.createEl("div", { cls: "gc-task-meta" });
-      if (t.dueDate) {
+      if (t2.dueDate) {
         meta.createEl("span", {
           cls: `gc-due-badge ${urgency.cls}`,
-          text: `\u23F0 ${urgency.text} (${t.dueDate} ${t.dueTime || ""})`
+          text: `\u23F0 ${urgency.text} (${t2.dueDate} ${t2.dueTime || ""})`
         });
       } else {
         meta.createEl("span", {
@@ -1010,18 +1151,18 @@ var GoogleClassroomView = class extends obsidian.ItemView {
           text: "\u23F0 Sin fecha de entrega"
         });
       }
-      if (t.maxPoints > 0) {
-        meta.createEl("span", { text: `\u{1F3AF} ${t.maxPoints} pts` });
+      if (t2.maxPoints > 0) {
+        meta.createEl("span", { text: `\u{1F3AF} ${t2.maxPoints} pts` });
       }
       const statusBadge = meta.createEl("span", {
         text: isDone ? "\u2705 Entregada" : "\u23F3 Pendiente"
       });
       statusBadge.style.color = isDone ? "#10b981" : "#f59e0b";
       statusBadge.style.fontWeight = "600";
-      if (t.description) {
+      if (t2.description) {
         card.createEl("div", {
           cls: "gc-task-desc",
-          text: t.description
+          text: t2.description
         });
       }
       const actions = card.createEl("div", { cls: "gc-task-actions" });
@@ -1031,7 +1172,7 @@ var GoogleClassroomView = class extends obsidian.ItemView {
       });
       openNoteBtn.onclick = async () => {
         const baseFolder = this.plugin.data.syncFolder || "Classroom";
-        const taskPath = `${baseFolder}/${sanitizeFileName(t.courseName)}/${sanitizeFileName(t.title)}.md`;
+        const taskPath = `${baseFolder}/${sanitizeFileName(t2.courseName)}/${sanitizeFileName(t2.title)}.md`;
         const file = this.app.vault.getAbstractFileByPath(taskPath);
         if (file instanceof obsidian.TFile) {
           this.app.workspace.getLeaf(true).openFile(file);
@@ -1039,11 +1180,11 @@ var GoogleClassroomView = class extends obsidian.ItemView {
           new obsidian.Notice("La nota a\xFAn no ha sido creada. Pulsa Sincronizar.");
         }
       };
-      if (t.alternateLink) {
+      if (t2.alternateLink) {
         const extLink = actions.createEl("a", {
           cls: "gc-btn gc-btn-sm gc-btn-primary",
           text: "\u{1F517} Abrir en Classroom",
-          href: t.alternateLink
+          href: t2.alternateLink
         });
         extLink.target = "_blank";
       }

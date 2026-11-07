@@ -19,6 +19,151 @@ const VIEW_TYPE_CLASSROOM = 'google-classroom-sync-view';
 const OAUTH_PORT = 42813;
 const REDIRECT_URI = `http://127.0.0.1:${OAUTH_PORT}/callback`;
 
+// ─── i18n LOCALIZATION ENGINE (EN / ES) ───
+const USER_LOCALE = (typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('language') || 'en').toLowerCase();
+const IS_ES = USER_LOCALE.startsWith('es');
+
+const I18N = {
+  en: {
+    liveSync: 'Live sync • Last update:',
+    never: 'Never',
+    connectPrompt: 'Connect your account to sync courses and tasks',
+    sync: 'Sync',
+    syncNowFull: '🔄 Sync Now',
+    connectGoogle: '🔑 Connect with Google',
+    tabCourses: '📚 Courses ({count})',
+    tabTasks: '📋 Tasks ({count})',
+    tabSettings: '⚙️ Connection',
+    searchCourses: 'Search course...',
+    searchTasks: 'Search task...',
+    onboardingTitle: 'Link your Google Classroom',
+    onboardingDesc: 'Access your coursework, due dates, and subjects organized in real time inside your Obsidian vault.',
+    onboardF1: '✨ Official Google Classroom API integration',
+    onboardF2: '📝 Automatic Markdown note generation per assignment',
+    onboardF3: '⏰ Smart urgency countdowns (Due today, tomorrow, this week)',
+    onboardF4: '🔒 100% private connection stored locally on your device',
+    connectNowBtn: '🚀 Connect with Google Classroom Now',
+    statCourses: 'Active Courses',
+    statTasks: 'Pending Tasks',
+    statDueSoon: 'Due Soon',
+    statFolder: 'Vault Folder',
+    badgeActive: 'Active ({count})',
+    badgeHidden: 'Hidden ({count})',
+    emptyHidden: 'No hidden courses. You can hide any course by clicking "Hide".',
+    noCoursesQuery: 'No courses found with "{query}"',
+    noActiveCourses: 'No active courses found.',
+    hideBtn: '✕ Hide',
+    unhideBtn: '👁️ Show',
+    totTasks: 'TOTAL TASKS',
+    pending: 'PENDING',
+    upToDate: 'UP TO DATE',
+    viewTasks: '📋 View Tasks',
+    openClassroom: '↗ Classroom',
+    filterAll: 'All',
+    filterPending: 'Pending',
+    filterDone: 'Completed',
+    filterOverdue: 'Overdue',
+    noTasksQuery: 'No tasks found with "{query}"',
+    noTasksCategory: 'No tasks in this category.',
+    dueToday: '🚨 Due Today',
+    dueTomorrow: '⚠️ Due Tomorrow',
+    dueInDays: '⏳ {days}d left',
+    overdue: '❌ Overdue',
+    noDueDate: '📅 No due date',
+    openInClassroom: 'Open in Classroom',
+    openLocalNote: 'Open Markdown Note',
+    connTitle: '⚙️ Google Classroom Connection & Credentials',
+    privacyNote: '🛡️ <b>Local-First & Absolute Privacy:</b> Connection runs directly between your Obsidian and Google\'s official OAuth 2.0 servers (RFC 8252). Your tokens and notes stay <b>strictly on your machine</b>. No third-party servers.',
+    connectedAccount: '👤 Connected Account',
+    connectedBadge: '🟢 Connected',
+    nameLabel: 'Name:',
+    emailLabel: 'Email:',
+    changeAccount: '🔑 Change Account',
+    logoutBtn: '🚪 Log Out',
+    credCardTitle: '🔑 Google Cloud Credentials (OAuth 2.0)',
+    credCardDesc: 'Enter your Client ID and Client Secret obtained from Google Cloud Console to connect with maximum privacy and without limits.',
+    clientIdLabel: 'Client ID:',
+    clientSecretLabel: 'Client Secret:',
+    connectBtn: '🚀 Connect with Google Classroom',
+    reconnectBtn: '🔄 Reconnect with Google',
+    guideTitle: '📖 Quick Guide: How to get your free credentials in 3 minutes',
+    guideWhy: '💡 <b>Why use your own credentials?</b> Gives you unlimited personal quota, maximum privacy, and guaranteed compatibility even if your school or university restricts unverified third-party apps.'
+  },
+  es: {
+    liveSync: 'Sincronización en vivo • Última actualización:',
+    never: 'Nunca',
+    connectPrompt: 'Conecta tu cuenta para sincronizar tareas y cursos',
+    sync: 'Sincronizar',
+    syncNowFull: '🔄 Sincronizar Ahora',
+    connectGoogle: '🔑 Conectar con Google',
+    tabCourses: '📚 Materias ({count})',
+    tabTasks: '📋 Tareas ({count})',
+    tabSettings: '⚙️ Conexión',
+    searchCourses: 'Buscar materia...',
+    searchTasks: 'Buscar tarea...',
+    onboardingTitle: 'Vincula tu Google Classroom',
+    onboardingDesc: 'Accede a todas tus tareas escolares, fechas de entrega y materias organizadas en tiempo real dentro de tu bóveda Obsidian.',
+    onboardF1: '✨ Sincronización oficial con Google Classroom API',
+    onboardF2: '📝 Creación automática de notas Markdown por tarea',
+    onboardF3: '⏰ Detección de urgencia (Vence hoy, mañana, esta semana)',
+    onboardF4: '🔒 Conexión 100% privada almacenada localmente en tu PC',
+    connectNowBtn: '🚀 Conectar con Google Classroom Ahora',
+    statCourses: 'Materias Activas',
+    statTasks: 'Tareas Pendientes',
+    statDueSoon: 'Vencen Pronto',
+    statFolder: 'Carpeta en Bóveda',
+    badgeActive: 'Activas ({count})',
+    badgeHidden: 'Ocultas ({count})',
+    emptyHidden: 'No tienes materias ocultas. Puedes ocultar cualquier materia tocando el botón "Ocultar".',
+    noCoursesQuery: 'No se encontraron materias con "{query}"',
+    noActiveCourses: 'No hay materias activas.',
+    hideBtn: '✕ Ocultar',
+    unhideBtn: '👁️ Mostrar',
+    totTasks: 'TAREAS TOTALES',
+    pending: 'PENDIENTES',
+    upToDate: 'AL DÍA',
+    viewTasks: '📋 Ver Tareas',
+    openClassroom: '↗ Classroom',
+    filterAll: 'Todas',
+    filterPending: 'Pendientes',
+    filterDone: 'Completadas',
+    filterOverdue: 'Vencidas',
+    noTasksQuery: 'No se encontraron tareas con "{query}"',
+    noTasksCategory: 'No hay tareas en esta categoría.',
+    dueToday: '🚨 Vence Hoy',
+    dueTomorrow: '⚠️ Vence Mañana',
+    dueInDays: '⏳ Faltan {days}d',
+    overdue: '❌ Vencida',
+    noDueDate: '📅 Sin fecha de entrega',
+    openInClassroom: 'Abrir en Classroom',
+    openLocalNote: 'Abrir Nota Markdown',
+    connTitle: '⚙️ Conexión & Credenciales de Google Classroom',
+    privacyNote: '🛡️ <b>Local-First y Privacidad Absoluta:</b> La conexión se realiza directamente entre tu Obsidian y los servidores oficiales de Google (OAuth 2.0 Desktop RFC 8252). Tus tokens y notas se guardan <b>exclusivamente en tu dispositivo</b>. Sin servidores intermedios.',
+    connectedAccount: '👤 Cuenta Vinculada',
+    connectedBadge: '🟢 Conectado',
+    nameLabel: 'Nombre:',
+    emailLabel: 'Correo:',
+    changeAccount: '🔑 Cambiar Cuenta',
+    logoutBtn: '🚪 Cerrar Sesión',
+    credCardTitle: '🔑 Credenciales de Google Cloud (OAuth 2.0)',
+    credCardDesc: 'Ingresa tu Client ID y Client Secret obtenidos en Google Cloud Console para conectar tu cuenta con máxima privacidad y sin límites.',
+    clientIdLabel: 'ID de Cliente (Client ID):',
+    clientSecretLabel: 'Secreto de Cliente (Client Secret):',
+    connectBtn: '🚀 Conectar con Google Classroom',
+    reconnectBtn: '🔄 Reconectar con Google',
+    guideTitle: '📖 Guía Rápida: Cómo obtener tus credenciales gratuitas en 3 minutos',
+    guideWhy: '💡 <b>¿Por qué usar tus propias credenciales?</b> Te otorga cuota personal ilimitada, máxima privacidad y compatibilidad garantizada incluso si tu colegio o universidad bloquea aplicaciones de terceros.'
+  }
+};
+
+function t(key, vars = {}) {
+  let str = (IS_ES ? I18N.es[key] : I18N.en[key]) || I18N.en[key] || key;
+  for (const v in vars) {
+    str = str.replace(new RegExp(`\\{${v}\\}`, 'g'), vars[v]);
+  }
+  return str;
+}
+
 const DEFAULT_SETTINGS = {
   clientId: '',
   clientSecret: '',
@@ -724,8 +869,8 @@ class GoogleClassroomView extends obsidian.ItemView {
     titleWrap.createEl('p', {
       cls: 'gc-subtitle',
       text: isConnected
-        ? `Sincronización en vivo • Última actualización: ${this.plugin.data.lastSync ? new Date(this.plugin.data.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Nunca'}`
-        : 'Conecta tu cuenta para sincronizar tareas y cursos'
+        ? `${t('liveSync')} ${this.plugin.data.lastSync ? new Date(this.plugin.data.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : t('never')}`
+        : t('connectPrompt')
     });
 
     const headerActions = header.createEl('div', { cls: 'gc-header-actions' });
@@ -742,13 +887,13 @@ class GoogleClassroomView extends obsidian.ItemView {
 
       const syncBtn = headerActions.createEl('button', {
         cls: 'gc-btn gc-btn-primary',
-        text: '🔄 Sincronizar'
+        text: `🔄 ${t('sync')}`
       });
       syncBtn.onclick = () => this.plugin.syncAll(true);
     } else {
       const loginBtn = headerActions.createEl('button', {
         cls: 'gc-btn gc-btn-google',
-        text: '🔑 Conectar con Google'
+        text: t('connectGoogle')
       });
       loginBtn.onclick = () => {
         this.plugin.startOAuthLogin(() => this.render(), (err) => {
@@ -776,19 +921,19 @@ class GoogleClassroomView extends obsidian.ItemView {
 
     const tabCourses = tabs.createEl('button', {
       cls: `gc-tab-btn ${this.activeTab === 'courses' ? 'is-active' : ''}`,
-      text: `📚 Materias (${activeCourses.length})`
+      text: t('tabCourses', { count: activeCourses.length })
     });
     tabCourses.onclick = () => { this.activeTab = 'courses'; this.render(); };
 
     const tabTasks = tabs.createEl('button', {
       cls: `gc-tab-btn ${this.activeTab === 'tasks' ? 'is-active' : ''}`,
-      text: `📋 Tareas (${pendingCount})`
+      text: t('tabTasks', { count: pendingCount })
     });
     tabTasks.onclick = () => { this.activeTab = 'tasks'; this.render(); };
 
     const tabSettings = tabs.createEl('button', {
       cls: `gc-tab-btn ${this.activeTab === 'settings' ? 'is-active' : ''}`,
-      text: '⚙️ Conexión'
+      text: t('tabSettings')
     });
     tabSettings.onclick = () => { this.activeTab = 'settings'; this.render(); };
 
@@ -798,7 +943,7 @@ class GoogleClassroomView extends obsidian.ItemView {
       searchBox.createEl('span', { text: '🔍' });
       const input = searchBox.createEl('input', {
         type: 'text',
-        placeholder: this.activeTab === 'courses' ? 'Buscar materia...' : 'Buscar tarea...'
+        placeholder: this.activeTab === 'courses' ? t('searchCourses') : t('searchTasks')
       });
       input.value = this.searchQuery;
       input.oninput = (e) => {
