@@ -228,6 +228,11 @@ var GoogleClassroomPlugin = class extends obsidian.Plugin {
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   }
   startOAuthLogin(onSuccess, onError) {
+    if (!this.data.clientId || !this.data.clientId.trim() || !this.data.clientSecret || !this.data.clientSecret.trim()) {
+      new obsidian.Notice("\u26A0\uFE0F Falta configurar el Client ID o Client Secret de Google Cloud. Revisa la pesta\xF1a de Conexi\xF3n o Ajustes.", 6e3);
+      if (onError) onError(new Error("Credenciales no configuradas"));
+      return;
+    }
     this.stopOAuthServer();
     try {
       this.oauthServer = http.createServer(async (req, res) => {
@@ -239,10 +244,14 @@ var GoogleClassroomPlugin = class extends obsidian.Plugin {
             if (errorParam) {
               res.writeHead(400, { "Content-Type": "text/html; charset=utf-8" });
               res.end(`
-                <html><body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
-                  <div style="text-align:center;padding:2rem;background:#1e293b;border:1px solid #ef4444;border-radius:16px;">
-                    <h2 style="color:#ef4444;">\u274C Error de Autorizaci\xF3n</h2>
-                    <p style="color:#94a3b8;">${errorParam}</p>
+                <html><body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:1.5rem;">
+                  <div style="text-align:center;max-width:520px;padding:2.5rem;background:#1e293b;border:1px solid #ef4444;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.5);">
+                    <div style="font-size:2.8rem;margin-bottom:0.75rem;">\u274C</div>
+                    <h2 style="color:#ef4444;margin:0 0 0.75rem 0;">Error de Autorizaci\xF3n</h2>
+                    <p style="color:#fca5a5;background:rgba(239,68,68,0.1);padding:0.75rem;border-radius:8px;font-family:monospace;font-size:0.9rem;">${errorParam}</p>
+                    <p style="color:#94a3b8;font-size:0.9rem;margin-top:1.25rem;line-height:1.5;">
+                      <b>Tip:</b> Si recibes <i>access_denied</i>, aseg\xFArate de que tu correo est\xE9 agregado como <b>Usuario de prueba (Test user)</b> en tu proyecto de Google Cloud Console, o que hayas configurado tu propio Client ID y Client Secret en Obsidian.
+                    </p>
                   </div>
                 </body></html>
               `);
@@ -635,7 +644,7 @@ var GoogleClassroomView = class extends obsidian.ItemView {
     const headerActions = header.createEl("div", { cls: "gc-header-actions" });
     if (isConnected) {
       const userBadge = headerActions.createEl("div", { cls: "gc-user-badge" });
-      const userName = this.plugin.data.userProfile ? this.plugin.data.userProfile.name || this.plugin.data.userProfile.email : "Nelson";
+      const userName = this.plugin.data.userProfile ? this.plugin.data.userProfile.name || this.plugin.data.userProfile.email : "Estudiante";
       const initial = userName.charAt(0).toUpperCase();
       userBadge.createEl("div", { cls: "gc-user-avatar", text: initial });
       userBadge.createEl("div", { cls: "gc-user-dot" });
@@ -1042,50 +1051,148 @@ var GoogleClassroomView = class extends obsidian.ItemView {
   }
   renderSettingsTab(parent) {
     const wrap = parent.createEl("div");
-    wrap.style.maxWidth = "640px";
+    wrap.style.maxWidth = "720px";
     wrap.style.margin = "1rem auto";
-    wrap.createEl("h2", { text: "\u2699\uFE0F Conexi\xF3n de Google Classroom" });
-    const infoBox = wrap.createEl("div", {
-      text: "Tu conexi\xF3n utiliza el protocolo oficial OAuth 2.0 Desktop de Google. Tus tokens se almacenan de manera local en tu m\xE1quina."
-    });
-    infoBox.style.padding = "1.1rem";
+    wrap.createEl("h2", { text: "\u2699\uFE0F Conexi\xF3n & Credenciales de Google Classroom" });
+    const infoBox = wrap.createEl("div");
+    infoBox.style.padding = "1.1rem 1.3rem";
     infoBox.style.borderRadius = "14px";
-    infoBox.style.background = "rgba(255,255,255,0.04)";
+    infoBox.style.background = "rgba(255,255,255,0.03)";
     infoBox.style.border = "1px solid rgba(255,255,255,0.08)";
     infoBox.style.marginBottom = "1.5rem";
-    infoBox.style.fontSize = "0.86rem";
+    infoBox.style.fontSize = "0.88rem";
+    infoBox.style.lineHeight = "1.5";
     infoBox.style.color = "var(--text-muted)";
-    if (this.plugin.data.userProfile) {
+    infoBox.innerHTML = `\u{1F6E1}\uFE0F <b>Local-First y Privacidad Absoluta:</b> La conexi\xF3n se realiza directamente entre tu Obsidian y los servidores oficiales de Google (OAuth 2.0 Desktop RFC 8252). Tus tokens y notas se guardan <b>exclusivamente en tu dispositivo</b>. Sin servidores intermedios.`;
+    if (this.plugin.data.tokens && this.plugin.data.userProfile) {
       const userBox = wrap.createEl("div");
-      userBox.style.padding = "1.25rem";
+      userBox.style.padding = "1.25rem 1.5rem";
       userBox.style.borderRadius = "16px";
-      userBox.style.background = "rgba(16, 185, 129, 0.08)";
-      userBox.style.border = "1px solid rgba(16, 185, 129, 0.25)";
+      userBox.style.background = "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(30, 41, 59, 0.4) 100%)";
+      userBox.style.border = "1px solid rgba(16, 185, 129, 0.35)";
       userBox.style.marginBottom = "1.5rem";
-      userBox.createEl("h3", { text: "\u{1F464} Cuenta Vinculada", attr: { style: "margin:0 0 0.5rem 0; font-size:1.05rem; color:#10b981;" } });
-      userBox.createEl("div", { text: `Nombre: ${this.plugin.data.userProfile.name || "Usuario"}` });
-      userBox.createEl("div", { text: `Correo: ${this.plugin.data.userProfile.email || "N/A"}` });
+      userBox.style.boxShadow = "0 8px 24px rgba(0,0,0,0.2)";
+      const userHeader = userBox.createEl("div", { attr: { style: "display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;" } });
+      userHeader.createEl("h3", { text: "\u{1F464} Cuenta Vinculada", attr: { style: "margin:0; font-size:1.1rem; color:#10b981;" } });
+      userHeader.createEl("span", { text: "\u{1F7E2} Conectado", attr: { style: "font-size:0.75rem; font-weight:700; background:rgba(16,185,129,0.2); color:#10b981; padding:0.25rem 0.65rem; border-radius:999px; border:1px solid rgba(16,185,129,0.4);" } });
+      userBox.createEl("div", { text: `Nombre: ${this.plugin.data.userProfile.name || "Estudiante"}`, attr: { style: "font-weight:600; margin-bottom:0.35rem; color:var(--text-normal);" } });
+      userBox.createEl("div", { text: `Correo: ${this.plugin.data.userProfile.email || "N/A"}`, attr: { style: "font-size:0.85rem; color:var(--text-muted); margin-bottom:0.85rem;" } });
+      const btnRow = userBox.createEl("div", { attr: { style: "display:flex; gap:0.75rem; flex-wrap:wrap;" } });
+      const syncBtn = btnRow.createEl("button", { cls: "gc-btn gc-btn-primary", text: "\u{1F504} Sincronizar Ahora" });
+      syncBtn.onclick = async () => {
+        await this.plugin.syncAll(true);
+        this.render();
+      };
+      const reconnectBtn = btnRow.createEl("button", { cls: "gc-btn", text: "\u{1F511} Cambiar Cuenta" });
+      reconnectBtn.onclick = () => {
+        this.plugin.startOAuthLogin(() => this.render(), (err) => {
+          new obsidian.Notice("Error: " + err.message);
+        });
+      };
+      const logoutBtn = btnRow.createEl("button", { cls: "gc-btn gc-btn-danger", text: "\u{1F6AA} Cerrar Sesi\xF3n" });
+      logoutBtn.onclick = async () => {
+        await this.plugin.logout();
+        this.render();
+      };
     }
-    const btnRow = wrap.createEl("div");
-    btnRow.style.display = "flex";
-    btnRow.style.gap = "1rem";
-    const reconnectBtn = btnRow.createEl("button", {
-      cls: "gc-btn gc-btn-primary",
-      text: "\u{1F504} Reconectar / Cambiar Cuenta"
+    const credCard = wrap.createEl("div");
+    credCard.style.padding = "1.35rem 1.5rem";
+    credCard.style.borderRadius = "16px";
+    credCard.style.background = "rgba(15, 23, 42, 0.6)";
+    credCard.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+    credCard.style.marginBottom = "1.5rem";
+    credCard.createEl("h3", {
+      text: "\u{1F511} Credenciales de Google Cloud (OAuth 2.0)",
+      attr: { style: "margin:0 0 0.5rem 0; font-size:1.05rem;" }
     });
-    reconnectBtn.onclick = () => {
+    credCard.createEl("p", {
+      text: "Ingresa tu Client ID y Client Secret obtenidos en Google Cloud Console para conectar tu cuenta con m\xE1xima privacidad y sin l\xEDmites.",
+      attr: { style: "font-size:0.85rem; color:var(--text-muted); margin:0 0 1.25rem 0; line-height:1.4;" }
+    });
+    credCard.createEl("label", {
+      text: "ID de Cliente (Client ID):",
+      attr: { style: "display:block; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.35rem;" }
+    });
+    const idInput = credCard.createEl("input", {
+      type: "text",
+      value: this.plugin.data.clientId || "",
+      placeholder: "ej. 123456789-xxxxxxxx.apps.googleusercontent.com",
+      attr: { style: "width:100%; box-sizing:border-box; padding:0.6rem 0.85rem; border-radius:10px; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.15); color:var(--text-normal); font-family:monospace; font-size:0.82rem; margin-bottom:1rem;" }
+    });
+    idInput.onchange = async () => {
+      this.plugin.data.clientId = idInput.value.trim();
+      await this.plugin.saveSettings();
+    };
+    credCard.createEl("label", {
+      text: "Secreto de Cliente (Client Secret):",
+      attr: { style: "display:block; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.35rem;" }
+    });
+    const secInput = credCard.createEl("input", {
+      type: "password",
+      value: this.plugin.data.clientSecret || "",
+      placeholder: "ej. GOCSPX-xxxxxxxxxxxxxxxx",
+      attr: { style: "width:100%; box-sizing:border-box; padding:0.6rem 0.85rem; border-radius:10px; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.15); color:var(--text-normal); font-family:monospace; font-size:0.82rem; margin-bottom:1.25rem;" }
+    });
+    secInput.onchange = async () => {
+      this.plugin.data.clientSecret = secInput.value.trim();
+      await this.plugin.saveSettings();
+    };
+    const actionRow = credCard.createEl("div", { attr: { style: "display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;" } });
+    const connectBtn = actionRow.createEl("button", {
+      cls: "gc-btn gc-btn-google",
+      text: this.plugin.data.tokens ? "\u{1F504} Reconectar con Google" : "\u{1F680} Conectar con Google Classroom"
+    });
+    connectBtn.onclick = async () => {
+      this.plugin.data.clientId = idInput.value.trim();
+      this.plugin.data.clientSecret = secInput.value.trim();
+      await this.plugin.saveSettings();
+      if (!this.plugin.data.clientId || !this.plugin.data.clientSecret) {
+        new obsidian.Notice("\u26A0\uFE0F Ingresa tu Client ID y Client Secret antes de conectar.", 5e3);
+        return;
+      }
       this.plugin.startOAuthLogin(() => this.render(), (err) => {
-        new obsidian.Notice("Error: " + err.message);
+        new obsidian.Notice("Error al conectar: " + err.message, 6e3);
       });
     };
-    const logoutBtn = btnRow.createEl("button", {
-      cls: "gc-btn gc-btn-danger",
-      text: "\u{1F6AA} Cerrar Sesi\xF3n"
+    const guideBox = wrap.createEl("details");
+    guideBox.style.padding = "1.25rem 1.5rem";
+    guideBox.style.borderRadius = "16px";
+    guideBox.style.background = "rgba(255, 255, 255, 0.02)";
+    guideBox.style.border = "1px solid rgba(16, 185, 129, 0.25)";
+    guideBox.style.marginBottom = "2rem";
+    guideBox.style.cursor = "pointer";
+    const guideSummary = guideBox.createEl("summary", {
+      attr: { style: "font-weight:700; font-size:0.95rem; color:#10b981; outline:none; display:flex; align-items:center; gap:0.5rem;" }
     });
-    logoutBtn.onclick = () => {
-      this.plugin.logout();
-      this.render();
-    };
+    guideSummary.setText("\u{1F4D6} Gu\xEDa R\xE1pida: C\xF3mo obtener tus credenciales gratuitas en 3 minutos");
+    const guideContent = guideBox.createEl("div", {
+      attr: { style: "margin-top:1.15rem; font-size:0.86rem; line-height:1.6; color:var(--text-normal); cursor:default;" }
+    });
+    guideContent.innerHTML = `
+      <p style="margin-top:0;">Crear tus credenciales de Google Cloud es <b>100% gratuito</b>, toma 3 minutos y garantiza tu propia conexi\xF3n privada:</p>
+      <ol style="padding-left:1.25rem; margin-bottom:1rem;">
+        <li style="margin-bottom:0.5rem;"><b>Crear Proyecto:</b> Abre <a href="https://console.cloud.google.com" target="_blank" style="color:#10b981; text-decoration:underline;">Google Cloud Console</a>, haz clic en el selector superior de proyectos y presiona <b>"Nuevo Proyecto"</b> (nombre sugerido: <code>Obsidian Classroom</code>).</li>
+        <li style="margin-bottom:0.5rem;"><b>Habilitar API:</b> En la barra superior busca <b>"Google Classroom API"</b> y haz clic en <b>"Habilitar"</b>.</li>
+        <li style="margin-bottom:0.5rem;"><b>Pantalla de Consentimiento:</b> Ve a <i>APIs y servicios \u2794 Pantalla de consentimiento de OAuth</i>:
+          <ul style="margin:0.25rem 0 0.25rem 1rem;">
+            <li>Selecciona <b>Externa</b> y dale a <b>Crear</b>.</li>
+            <li>Coloca nombre (ej. <code>Classroom Sync</code>) y tu correo Gmail.</li>
+            <li>En <i>Usuarios de prueba (Test users)</i>, haz clic en <b>"Add users"</b> y agrega tu propio correo.</li>
+          </ul>
+        </li>
+        <li style="margin-bottom:0.5rem;"><b>Crear Credenciales:</b> Ve a <i>Credenciales \u2794 Crear credenciales \u2794 ID de cliente de OAuth</i>:
+          <ul style="margin:0.25rem 0 0.25rem 1rem;">
+            <li>Tipo de aplicaci\xF3n: <b>Aplicaci\xF3n de escritorio (Desktop app)</b>.</li>
+            <li>Nombre: <code>Obsidian Desktop</code>.</li>
+            <li>Haz clic en <b>Crear</b>.</li>
+          </ul>
+        </li>
+        <li><b>Pegar y Conectar:</b> Copia el <b>ID de cliente</b> y el <b>Secreto de cliente</b>, p\xE9galos en las casillas de arriba y haz clic en <b>"Conectar con Google Classroom"</b>.</li>
+      </ol>
+      <div style="padding:0.75rem 1rem; border-radius:10px; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.2); font-size:0.8rem; color:#a7f3d0;">
+        \u{1F4A1} <b>\xBFPor qu\xE9 usar tus propias credenciales?</b> Te otorga cuota personal ilimitada, m\xE1xima privacidad y compatibilidad garantizada incluso si tu colegio o universidad bloquea aplicaciones de terceros.
+      </div>
+    `;
   }
 };
 var GoogleClassroomSettingTab = class extends obsidian.PluginSettingTab {
@@ -1111,6 +1218,9 @@ var GoogleClassroomSettingTab = class extends obsidian.PluginSettingTab {
       this.plugin.refreshViews();
       this.display();
       new obsidian.Notice("Todas las materias han sido restauradas.");
+    }));
+    new obsidian.Setting(containerEl).setName("Gu\xEDa R\xE1pida de Conexi\xF3n").setDesc('Consulta la gu\xEDa interactiva paso a paso de 3 minutos dentro de la pesta\xF1a "Conexi\xF3n" en el Dashboard de Classroom.').addButton((btn) => btn.setButtonText("Abrir Dashboard").onClick(() => {
+      this.plugin.activateView();
     }));
     new obsidian.Setting(containerEl).setName("ID de Cliente OAuth (Google Cloud)").setDesc("El Client ID obtenido en Google Cloud Console.").addText((text) => text.setValue(this.plugin.data.clientId).onChange(async (value) => {
       this.plugin.data.clientId = value.trim();

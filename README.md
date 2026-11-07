@@ -2,7 +2,7 @@
 
 [![Obsidian Plugin](https://img.shields.io/badge/Obsidian-Plugin-7C3AED?logo=obsidian&logoColor=white)](https://obsidian.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.2.0-10B981.svg)](https://github.com/Nelxson2099/obsidian-google-classroom/releases)
+[![Version](https://img.shields.io/badge/version-1.2.3-10B981.svg)](https://github.com/Nelxson2099/obsidian-google-classroom/releases)
 
 **Google Classroom Sync** brings your academic life directly into Obsidian. Connect your Google Classroom account to visualize courses, track upcoming assignments with smart urgency badges, and automatically generate structured Markdown study notes.
 
@@ -58,9 +58,25 @@ Google Classroom requires OAuth 2.0 access. To connect your account:
 
 ---
 
+## 🇪🇸 Guía de Configuración Rápida (3 minutos)
+
+Google Classroom requiere autenticación OAuth 2.0. Conectar tu cuenta es 100% gratuito y privado:
+
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/).
+2. Crea un nuevo proyecto (ej. `Obsidian Classroom`).
+3. En **APIs y servicios** → **Biblioteca**, busca y habilita **Google Classroom API**.
+4. En **APIs y servicios** → **Pantalla de consentimiento de OAuth**, elige **Externa**, ingresa el nombre de la app y agrega tu correo Gmail en **Usuarios de prueba (Test users)**.
+5. En **APIs y servicios** → **Credenciales**, haz clic en **Crear credenciales** → **ID de cliente de OAuth**:
+   - Tipo de aplicación: **Aplicación de escritorio (Desktop app)**.
+   - Nombre: `Obsidian Classroom Sync`.
+6. Copia tu **Client ID** y **Client Secret**.
+7. En Obsidian, abre la pestaña **Conexión** en el Dashboard de Classroom o en **Ajustes** → **Google Classroom Sync**, pega ambos valores y haz clic en **Conectar con Google Classroom**.
+
+---
+
 ## 🛡️ Privacy & Security
 
-Your data never leaves your device. This plugin connects directly between your local Obsidian vault and Google's official API servers using standard HTTPS. No third-party servers, no analytics, and zero tracking.
+Your data never leaves your device. This plugin connects directly between your local Obsidian vault and Google's official API servers using standard HTTPS. No third-party servers, no analytics, and zero tracking. Read our complete [Privacy Policy](PRIVACY.md).
 
 ---
 
