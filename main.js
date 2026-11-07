@@ -14,7 +14,7 @@ var url = require("url");
 var VIEW_TYPE_CLASSROOM = "google-classroom-sync-view";
 var OAUTH_PORT = 42813;
 var REDIRECT_URI = `http://127.0.0.1:${OAUTH_PORT}/callback`;
-var USER_LOCALE = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("language") || "en").toLowerCase();
+var USER_LOCALE = (typeof window !== "undefined" && (window.moment && typeof window.moment.locale === "function" && window.moment.locale() || navigator && navigator.language || "en")).toLowerCase();
 var IS_ES = USER_LOCALE.startsWith("es");
 var I18N = {
   en: {
